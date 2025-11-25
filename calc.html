@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Калькулятор рисков для самозанятых</title>
+    <style>
+        :root {
+            --bg-primary: #ffffff;
+            --text-primary: #1a1a1a;
+            --text-secondary: #666666;
+            --border-color: #e0e0e0;
+            --accent: #007aff;
+            --accent-hover: #0062cc;
+            --success: #34c759;
+            --warning: #ff9500;
+            --danger: #ff3b30;
+            --card-bg: #f9fafb;
+            --page-bg: #fafdff;
+            --shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-primary: #121214;
+                --text-primary: #f2f2f7;
+                --text-secondary: #a6a6ae;
+                --border-color: #3a3a3c;
+                --card-bg: #1c1c1e;
+                --page-bg: #0f0f10;
+                --shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #fafdff 0%, #f5f7ff 100%);
+            background-size: 400% 400%;
+            background-position: 0% 50%;
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 0;
+            margin: 0;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zm26-22c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zm3 57c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23e0e0e6' fill-opacity='0.2' fill-rule='evenodd'/%3E%3C/svg%3E") center;
+            background-size: cover;
+            z-index: -1;
+            opacity: 0.6;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px 16px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .page {
+            display: none;
+            padding: 24px 16px;
+            background: var(--bg-primary);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            animation: fadeIn 0.4s ease-out;
+            margin-bottom: 20px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+
+        h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 20px 0 12px;
+            color: var(--text-primary);
+        }
+
+        .separator {
+            height: 1px;
+            background: var(--border-color);
+            margin: 24px 0;
+        }
+
+        .info-text {
+            color: var(--text-secondary);
+            font-size: 15px;
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+
+        .question-container {
+            margin: 24px 0;
+        }
+
+        .question-category {
+            color: var(--text-secondary);
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .question-text {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .question-hint {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .option {
+            position: relative;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            cursor: pointer;
+            transition: var(--transition);
+            background: var(--bg-primary);
+        }
+
+        .option::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: 16px;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-color);
+            border-radius: 50%;
+            transform: translateY(-50%);
+            transition: var(--transition);
+        }
+
+        .option:hover {
+            border-color: var(--accent);
+        }
+
+        .option.selected {
+            border-color: var(--accent);
+            background: rgba(0, 122, 255, 0.05);
+        }
+
+        .option.selected::before {
+            border-color: var(--accent);
+            background: var(--accent);
+        }
+
+        .option.selected::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: 16px;
+            width: 6px;
+            height: 12px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: translateY(-50%) rotate(45deg);
+        }
+
+        .option-text {
+            font-weight: 500;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .btn {
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            font-size: 16px;
+            line-height: 1;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            min-width: 100px;
+            box-shadow: 0 2px 6px rgba(0, 122, 255, 0.1);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-back {
+            background: transparent;
+            color: var(--accent);
+        }
+
+        .btn-back:hover {
+            background: rgba(0, 122, 255, 0.05);
+        }
+
+        .btn-next, .btn-start {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-next:hover:not(:disabled), .btn-start:hover {
+            background: var(--accent-hover);
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.25);
+        }
+
+        .btn-next:disabled {
+            background: #c0c0c0;
+            cursor: not-allowed;
+            opacity: 0.8;
+            box-shadow: none;
+        }
+
+        .btn-start {
+            width: 100%;
+            margin-top: 24px;
+            padding: 16px;
+            font-size: 17px;
+        }
+
+        .progress {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .progress-bar {
+            flex-grow: 1;
+            height: 6px;
+            background: var(--border-color);
+            border-radius: 3px;
+            margin: 0 12px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent);
+            border-radius: 3px;
+            transition: width 0.4s ease;
+        }
+
+        .result-section {
+            text-align: center;
+            margin: 24px 0;
+        }
+
+        .risk-percentage {
+            font-size: 56px;
+            font-weight: 800;
+            margin: 16px 0;
+        }
+
+        .risk-low-percent { color: var(--success); }
+        .risk-medium-percent { color: var(--warning); }
+        .risk-high-percent { color: var(--danger); }
+
+        .score {
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin: 20px 0;
+        }
+
+        .categories {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin: 24px 0;
+        }
+
+        .category {
+            flex: 1 1 calc(33.333% - 12px);
+            min-width: 120px;
+            text-align: center;
+            padding: 16px;
+            background: var(--card-bg);
+            border-radius: 12px;
+        }
+
+        .category-name {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        .category-score {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .recommendations {
+            text-align: left;
+            margin: 24px 0;
+        }
+
+        .recommendation {
+            margin-bottom: 14px;
+            padding-left: 24px;
+            position: relative;
+            font-size: 15px;
+        }
+
+        .recommendation:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            top: 2px;
+            color: var(--success);
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .legal-note {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 20px;
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        .checkbox {
+            margin: 16px 0;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .checkbox input {
+            margin-right: 10px;
+            margin-top: 4px;
+            accent-color: var(--accent);
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 12px 8px;
+            }
+
+            .page {
+                padding: 18px 12px;
+                margin-bottom: 12px;
+            }
+
+            h1 {
+                font-size: 21px;
+            }
+
+            h2 {
+                font-size: 17px;
+            }
+
+            .question-text {
+                font-size: 19px;
+            }
+
+            .option {
+                padding: 14px 16px;
+            }
+
+            .btn {
+                padding: 12px 20px;
+                font-size: 15px;
+            }
+
+            .btn-start {
+                padding: 14px;
+            }
+
+            .risk-percentage {
+                font-size: 48px;
+            }
+
+            .progress {
+                flex-direction: column;
+                gap: 8px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            h1 { font-size: 19px; }
+            .risk-percentage { font-size: 40px; }
+            .category { flex: 1 1 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Стартовая страница -->
+        <div id="start-page" class="page active">
+            <h1>Калькулятор рисков для самозанятых</h1>
+            <p class="info-text">Проверьте, не грозит ли вам переквалификация гражданско-правового договора в трудовой</p>
+            
+            <div class="separator"></div>
+            
+            <h2>15 критериев оценки</h2>
+            <p class="info-text">Проанализируем ваши отношения с заказчиком по всем ключевым признакам</p>
+            
+            <div class="separator"></div>
+            
+            <h2>Детальный анализ</h2>
+            <p class="info-text">Получите подробный отчет с визуализацией рисков по категориям</p>
+            
+            <div class="separator"></div>
+            
+            <h2>Рекомендации</h2>
+            <p class="info-text">Узнайте, как снизить риски и защитить себя от переквалификации</p>
+            
+            <button class="btn btn-start" onclick="showPage('question-1')">Начать оценку рисков</button>
+            
+            <div class="checkbox">
+                <input type="checkbox" id="disclaimer">
+                <label for="disclaimer">Что такое переквалификация?</label>
+            </div>
+            
+            <p class="legal-note"><strong>Важно:</strong> Этот калькулятор носит информационный характер. Для юридической консультации обратитесь к специалисту.</p>
+        </div>
+
+        <!-- Вопрос 1 -->
+        <div id="question-1" class="page">
+            <div class="progress">
+                <span>Вопрос 1 из 15</span>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 6.67%"></div>
+                </div>
+                <span>1/15</span>
+            </div>
+            
+            <div class="question-category">ОРГАНИЗАЦИОННЫЕ ПРИЗНАКИ</div>
+            <h1 class="question-text">У вас есть фиксированный график работы?</h1>
+            <p class="question-hint">Например: пн-пт с 9:00 до 18:00, обеденный перерыв</p>
+            
+            <div class="options">
+                <div class="option" onclick="selectOption(this, 10)">
+                    <div class="option-text">Да, есть четкий график</div>
+                </div>
+                <div class="option" onclick="selectOption(this, 5)">
+                    <div class="option-text">Частично — есть примерное время</div>
+                </div>
+                <div class="option" onclick="selectOption(this, 0)">
+                    <div class="option-text">Нет, работаю когда удастся</div>
+                </div>
+            </div>
+            
+            <div class="navigation">
+                <button class="btn btn-back" onclick="showPage('start-page')">Назад</button>
+                <button class="btn btn-next" onclick="showPage('question-2')" disabled>Далее</button>
+            </div>
+        </div>
+
+        <!-- Вопрос 2 -->
+        <div id="question-2" class="page">
+            <div class="progress">
+                <span>Вопрос 2 из 15</span>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 13.33%"></div>
+                </div>
+                <span>2/15</span>
+            </div>
+            
+            <div class="question-category">ОРГАНИЗАЦИОННЫЕ ПРИЗНАКИ</div>
+            <h1 class="question-text">Где вы выполняете работу?</h1>
+            <p class="question-hint">Место выполнения работ</p>
+            
+            <div class="options">
+                <div class="option" onclick="selectOption(this, 10)">
+                    <div class="option-text">В офисе/помещении заказчика</div>
+                </div>
+                <div class="option" onclick="selectOption(this, 5)">
+                    <div class="option-text">Иногда у заказчика, иногда удаленно</div>
+                </div>
+                <div class="option" onclick="selectOption(this, 0)">
+                    <div class="option-text">У себя/удаленно</div>
+                </div>
+            </div>
+            
+            <div class="navigation">
+                <button class="btn btn-back" onclick="showPage('question-1')">Назад</button>
+                <button class="btn btn-next" onclick="showPage('question-3')" disabled>Далее</button>
+            </div>
+        </div>
+
+        <!-- Вопрос 3 -->
+        <div id="question-3" class="page">
+            <div class="progress">
+                <span>Вопрос 3 из 15</span>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 20%"></div>
+                </div>
+                <span>3/15</span>
+            </div>
+            
+            <div class="question-category">ОРГАНИЗАЦИОННЫЕ ПРИЗНАКИ</div>
+            <h1 class="question-text">Кто предоставляет инструменты, оборудование, материалы?</h1>
+            <p class="question-hint">Средства труда для выполнения работы</p>
+            
+            <div class="options">
+                <div class="option" onclick="selectOption(this, 10)">
+                    <div class="option-text">Заказчик предоставляет все необходимое</div>
+                </div>
+                <div class="option" onclick="selectOption(this, 5)">
+                    <div class="option-text">Частично заказчик, частично свое</div>
+                </div>
+                <div class="option" onclick="selectOption(this, 0)">
+                    <div class="option-text">Использую только свои инструменты</div>
+                </div>
+            </div>
+            
+            <div class="navigation">
+                <button class="btn btn-back" onclick="showPage('question-2')">Назад</button>
+                <button class="btn btn-next" onclick="showPage('question-4')" disabled>Далее</button>
+            </div>
+        </div>
+
+        <!-- Вопрос 4 -->
+        <div id="question-4" class="page">
+            <div class="progress">
+                <span>Вопрос 4 из 15</span>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 26.67%"></div>
+                </div>
+                <span>4/15</span>
+            </div>
+            
+            <div class="question-category">ОРГАНИЗАЦИОННЫЕ ПРИЗНАКИ</div>
+            <h1 class="question-text">Должны ли вы соблюдать внутренние правила заказчика?</h1>
+            <p class="question-hint">Инструкции, регламенты, стандарты работы</p>
+            
+            <div class="options">
+                <div class="option" onclick="selectOption(this, 10)">
+                    <div class="option-text">Да, есть строгие правила и инструкции</div>
+                </div>
+                <div class="option" onclick="selectOption(this, 5)">
+                    <div class="option-text">Есть некоторые требования</div>
+                </div>
+                <div class="option" onclick="selectOption(this, 0)">
+                    <div class="option-text">Нет, работаю как считаю нужным</div>
+                </div>
+            </div>
+            
+            <div class="navigation">
+                <button class="btn btn-back" onclick="showPage('question-3')">Назад</button>
+                <button class="btn btn-next" onclick="showPage('question-5')" disabled>Далее</button>
+            </div>
+        </div>
+
+        <!-- Вопрос 5 -->
+        <div id="question-5" class="page">
+            <div class="progress">
+                <span>Вопрос 5 из 15</span>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 33.33%"></div>
+                </div>
+                <span>5/15</span>
+            </div>
+            
+            <div class="question-category">ОРГАНИЗАЦИОННЫЕ ПРИЗНАКИ</div>
+            <h1 class="question-text">Контролирует ли заказчик процесс вашей работы?</h1>
+            <p class="question-hint">Отчеты, проверки, согласования в процессе работы</p>
+            
+            <div class="options">
+                <div class="option" onclick="selectOption(this, 10)">
+                    <div class="option-text">Да, постоянный контроль и отчетность</div>
+                </div>
+                <div class="option" onclick="selectOption(this, 5)">
+                    <div class="option-text">Контролирует только результат</div>
+                </div>
+                <div class="option" onclick="selectOption(this, 0)">
+                    <div class="option-text">Не контролирует процесс</div>
+                </div>
+            </div>
+            
+            <div class="navigation">
+                <button class="btn btn-back" onclick="showPage('question-4')">Назад</button>
+                <button class="btn btn-next" onclick="showPage('question-6')" disabled>Далее</button>
+            </div>
+        </div>
+
+        <!-- Вопрос 6 -->
+        <div id="question-6" class="page">
+            <div class="progress">
+                <span>Вопрос 6 из 15</span>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 40%"></div>
+                </div>
+                <span>6/15</span>
+            </div>
+            
+            <div class="question-category">ОРГАНИЗАЦИОННЫЕ ПРИЗНАКИ</div>
+            <h1 class="question-text">Может ли заказчик применить дисциплинарные взыскания?</h1>
+            <p class="question-hint">Штрафы, выговоры, депремирование</p>
+            
+            <div class="options">
+                <div class="option" onclick="selectOption(this, 10)">
+                    <div class="option-text">Да, были случаи штрафов/взысканий</div>
+                </div>
+                <div class="option" onclick="selectOption(this, 5)">
+                    <div class="option-text">Такая возможность есть в договоре</div>
+                </div>
+                <div class="option" onclick="selectOption(this, 0)">
+                    <div class="option-text">Нет, только расторжение договора</div>
+                </div>
+            </div>
+            
+            <div class="navigation">
+                <button class="btn btn-back" onclick="showPage('question-5')">Назад</button>
+                <button class="btn btn-next" onclick="showPage('question-7')" disabled>Далее</button>
+            </div>
+        </div>
+
+        <!-- Вопрос 7 -->
+        <div id="question-7" class="page">
+            <div class="progress">
+                <span>Вопрос 7 из 15</span>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 46.67%"></div>
+                </div>
+                <span>7/15</span>
+            </div>
+            
+            <div class="question-category">ОРГАНИЗАЦИОННЫЕ ПРИЗНАКИ</div>
+            <h1 class="question-text">Предоставляет ли заказчик отпуска или оплату больничных?</h1>
+            <p class="question-hint">Социальные гарантии</p>
+            
+            <div class="options">
+                <div class="option" onclick="selectOption(this, 10)">
+                    <div class="option-text">Да, есть отпуска/больничные</div>
+                </div>
+                <div class="option" onclick="selectOption(this, 5)">
+                    <div class="option-text">Частично (согласовываем перерывы)</div>
+                </div>
+                <div class="option" onclick="selectOption(this, 0)">
+                    <div class="option-text">Нет, за свой счет</div>
+                </div>
+            </div>
+            
+            <div class="navigation">
+                <button class="btn btn-back" onclick="showPage('question-6')">Назад</button>
+                <button class="btn btn-next" onclick="showPage('question-8')" disabled>Далее</button>
+            </div>
+        </div>
+
+        <!-- Вопрос 8 -->
+        <div id="question-8" class="page">
+            <div class="progress">
+                <span>Вопрос 8 из 15</span>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 53.33%"></div>
+                </div>
+                <span>8/15</span>
+            </div>
+            
+            <div class="question-category">ОРГАНИЗАЦИОННЫЕ ПРИЗНАКИ</div>
+            <h1 class="question-text">Есть ли у вас испытательный срок?</h1>
+            <p class="question-hint">Период адаптации/ознакомления с работой</p>
+            
+            <div class="options">
+                <div class="option" onclick="selectOption(this, 10)">
+                    <div class="option-text">Да, установлен испытательный срок</div>
+                </div>
+                <div class="option" onclick="selectOption(this, 5)">
+                    <div class="option-text">Есть период адаптации без формального срока</div>
+                </div>
+                <div class="option" onclick="selectOption(this, 0)">
+                    <div class="option-text">Нет испытательного срока</div>
+                </div>
+            </div>
+            
+            <div class="navigation">
+                <button class="btn btn-back" onclick="showPage('question-7')">Назад</button>
+                <button class="btn btn-next" onclick="showPage('question-9')" disabled>Далее</button>
+            </div>
+        </div>
+
+        <!-- Вопрос 9 -->
+        <div id="question-9" class="page">
+            <div class="progress">
+                <span>Вопрос 9 из 15</span>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 60%"></div>
+                </div>
+                <span>9/15</span>
+            </div>
+            
+            <div class="question-category">ОРГАНИЗАЦИОННЫЕ ПРИЗНАКИ</div>
+            <h1 class="question-text">Кто определяет место и время работы?</h1>
+            <p class="question-hint">Может ли заказчик изменить локацию/сроки в одностороннем порядке?</p>
+            
+            <div class="options">
+                <div class="option" onclick="selectOption(this, 10)">
+                    <div class="option-text">Заказчик определяет и может менять</div>
+                </div>
+                <div class="option" onclick="selectOption(this, 5)">
+                    <div class="option-text">Определяем совместно</div>
+                </div>
+                <div class="option" onclick="selectOption(this, 0)">
+                    <div class="option-text">Я сам определяю место и сроки</div>
+                </div>
+            </div>
+            
+            <div class="navigation">
+                <button class="btn btn-back" onclick="showPage('question-8')">Назад</button>
+                <button class="btn btn-next" onclick="showPage('question-10')" disabled>Далее</button>
+            </div>
+        </div>
+
+        <!-- Вопрос 10 -->
+        <div id="question-10" class="page">
+            <div class="progress">
+                <span>Вопрос 10 из 15</span>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 66.67%"></div>
+                </div>
+                <span>10/15</span>
+            </div>
+            
+            <div class="question-category">СОЦИАЛЬНЫЕ ПРИЗНАКИ</div>
+            <h1 class="question-text">Требуется ли соблюдать дресс-код или носить униформу?</h1>
+            <p class="question-hint">Внешний вид и корпоративная одежда</p>
+            
+            <div class="options">
+                <div class="option" onclick="selectOption(this, 5)">
+                    <div class="option-text">Да, обязательна униформа</div>
+                </div>
+                <div class="option" onclick="selectOption(this, 0)">
+                    <div class="option-text">Есть требования к внешнему виду</div>
+                </div>
+                <div class="option" onclick="selectOption(this, 0)">
+                    <div class="option-text">Нет требований</div>
+                </div>
+            </div>
+            
+            <div class="navigation">
+                <button class="btn btn-back" onclick="showPage('question-9')">Назад</button>
+                <button class="btn btn-next" onclick="showPage('question-11')" disabled>Далее</button>
+            </div>
+        </div>
+
+        <!-- Вопрос 11 -->
+        <div id="question-11" class="page">
+            <div class="progress">
+                <span>Вопрос 11 из 15</span>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 73.33%"></div>
+                </div>
+                <span>11/15</span>
+            </div>
+            
+            <div class="question-category">ЭКОНОМИЧЕСКИЕ ПРИЗНАКИ</div>
+            <h1 class="question-text">Можете ли вы работать с другими заказчиками?</h1>
+            <p class="question-hint">Ограничения на параллельную работу</p>
+            
+            <div class="options">
+                <div class="option" onclick="selectOption(this, 10)">
+                    <div class="option-text">Запрещено работать на других</div>
+                </div>
+                <div class="option" onclick="selectOption(this, 5)">
+                    <div class="option-text">Ограничена возможность</div>
+                </div>
+                <div class="option" onclick="selectOption(this, 0)">
+                    <div class="option-text">Могу работать с кем угодно</div>
+                </div>
+            </div>
+            
+            <div class="navigation">
+                <button class="btn btn-back" onclick="showPage('question-10')">Назад</button>
+                <button class="btn btn-next" onclick="showPage('question-12')" disabled>Далее</button>
+            </div>
+        </div>
+
+        <!-- Вопрос 12 -->
+        <div id="question-12" class="page">
+            <div class="progress">
+                <span>Вопрос 12 из 15</span>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 80%"></div>
+                </div>
+                <span>12/15</span>
+            </div>
+            
+            <div class="question-category">СОЦИАЛЬНЫЕ ПРИЗНАКИ</div>
+            <h1 class="question-text">Проводит ли заказчик обучение за свой счет?</h1>
+            <p class="question-hint">Повышение квалификации, тренинги</p>
+            
+            <div class="options">
+                <div class="option" onclick="selectOption(this, 5)">
+                    <div class="option-text">Да, регулярно обучает</div>
+                </div>
+                <div class="option" onclick="selectOption(this, 0)">
+                    <div class="option-text">Было вводное обучение</div>
+                </div>
+                <div class="option" onclick="selectOption(this, 0)">
+                    <div class="option-text">Нет, обучаюсь сам</div>
+                </div>
+            </div>
+            
+            <div class="navigation">
+                <button class="btn btn-back" onclick="showPage('question-11')">Назад</button>
+                <button class="btn btn-next" onclick="showPage('question-13')" disabled>Далее</button>
+            </div>
+        </div>
+
+        <!-- Вопрос 13 -->
+        <div id="question-13" class="page">
+            <div class="progress">
+                <span>Вопрос 13 из 15</span>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 86.67%"></div>
+                </div>
+                <span>13/15</span>
+            </div>
+            
+            <div class="question-category">СОЦИАЛЬНЫЕ ПРИЗНАКИ</div>
+            <h1 class="question-text">Считаетесь ли вы частью команды заказчика?</h1>
+            <p class="question-hint">Участие в корпоративных мероприятиях, упоминание на сайте</p>
+            
+            <div class="options">
+                <div class="option" onclick="selectOption(this, 5)">
+                    <div class="option-text">Да, позиционируют как сотрудника</div>
+                </div>
+                <div class="option" onclick="selectOption(this, 0)">
+                    <div class="option-text">Иногда включают в команду</div>
+                </div>
+                <div class="option" onclick="selectOption(this, 0)">
+                    <div class="option-text">Нет, я внешний исполнитель</div>
+                </div>
+            </div>
+            
+            <div class="navigation">
+                <button class="btn btn-back" onclick="showPage('question-12')">Назад</button>
+                <button class="btn btn-next" onclick="showPage('question-14')" disabled>Далее</button>
+            </div>
+        </div>
+
+        <!-- Вопрос 14 -->
+        <div id="question-14" class="page">
+            <div class="progress">
+                <span>Вопрос 14 из 15</span>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 93.33%"></div>
+                </div>
+                <span>14/15</span>
+            </div>
+            
+            <div class="question-category">ОРГАНИЗАЦИОННЫЕ ПРИЗНАКИ</div>
+            <h1 class="question-text">Можете ли вы привлечь субподрядчиков без согласования?</h1>
+            <p class="question-hint">Делегирование работы другим лицам</p>
+            
+            <div class="options">
+                <div class="option" onclick="selectOption(this, 10)">
+                    <div class="option-text">Нет, работаю только сам</div>
+                </div>
+                <div class="option" onclick="selectOption(this, 5)">
+                    <div class="option-text">Только с согласованием заказчика</div>
+                </div>
+                <div class="option" onclick="selectOption(this, 0)">
+                    <div class="option-text">Да, могу привлечь кого угодно</div>
+                </div>
+            </div>
+            
+            <div class="navigation">
+                <button class="btn btn-back" onclick="showPage('question-13')">Назад</button>
+                <button class="btn btn-next" onclick="showPage('question-15')" disabled>Далее</button>
+            </div>
+        </div>
+
+        <!-- Вопрос 15 -->
+        <div id="question-15" class="page">
+            <div class="progress">
+                <span>Вопрос 15 из 15</span>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 100%"></div>
+                </div>
+                <span>15/15</span>
+            </div>
+            
+            <div class="question-category">ЭКОНОМИЧЕСКИЕ ПРИЗНАКИ</div>
+            <h1 class="question-text">Получаете ли вы премии/бонусы от заказчика?</h1>
+            <p class="question-hint">Дополнительные выплаты за результаты</p>
+            
+            <div class="options">
+                <div class="option" onclick="selectOption(this, 5)">
+                    <div class="option-text">Да, регулярные премии/бонусы</div>
+                </div>
+                <div class="option" onclick="selectOption(this, 0)">
+                    <div class="option-text">Иногда поощряют</div>
+                </div>
+                <div class="option" onclick="selectOption(this, 0)">
+                    <div class="option-text">Нет, только оплата по договору</div>
+                </div>
+            </div>
+            
+            <div class="navigation">
+                <button class="btn btn-back" onclick="showPage('question-14')">Назад</button>
+                <button class="btn btn-next" onclick="showResults()" disabled>Завершить</button>
+            </div>
+        </div>
+
+        <!-- Страница результатов -->
+        <div id="results-page" class="page">
+            <div class="result-section">
+                <h1 id="risk-title">Низкий риск</h1>
+                <div id="risk-percentage" class="risk-percentage risk-low-percent">0%</div>
+                <p class="info-text">вероятность переквалификации</p>
+            </div>
+            
+            <h2>Общая оценка рисков</h2>
+            <p class="score" id="score-text">Набрано баллов: 0 из 111</p>
+            
+            <h2>Анализ по категориям</h2>
+            <div class="categories">
+                <div class="category">
+                    <div class="category-name">Организационные признаки</div>
+                    <div id="org-score" class="category-score">0</div>
+                </div>
+                <div class="category">
+                    <div class="category-name">Экономические признаки</div>
+                    <div id="eco-score" class="category-score">0</div>
+                </div>
+                <div class="category">
+                    <div class="category-name">Социальные признаки</div>
+                    <div id="soc-score" class="category-score">0</div>
+                </div>
+            </div>
+            
+            <div class="separator"></div>
+            
+            <h2>Рекомендации</h2>
+            <div id="recommendations-list" class="recommendations">
+                <div class="recommendation">Ваши отношения с заказчиком имеют признаки гражданско-правовых</div>
+                <div class="recommendation">Риск переквалификации минимален</div>
+                <div class="recommendation">Продолжайте документировать независимость в работе</div>
+                <div class="recommendation">Сохраняйте возможность работать с другими заказчиками</div>
+            </div>
+            
+            <div class="separator"></div>
+            
+            <h2>Правовая справка</h2>
+            <p class="info-text">В соответствии со статьями 15, 16, 19.1 ТК РФ, налоговые органы вправе переквалифицировать гражданско-правовые отношения в трудовые при наличии признаков трудовых отношений, независимо от названия договора.</p>
+            
+            <div class="navigation">
+                <button class="btn btn-back" onclick="showPage('question-15')">Назад</button>
+                <button class="btn btn-next" onclick="resetAndRestart()">Начать заново</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let userScore = 0;
+        const maxScore = 111;
+        let categoryScores = {
+            organizational: 0,
+            economic: 0,
+            social: 0
+        };
+
+        const questionToCategory = {
+            1: 'organizational',
+            2: 'organizational',
+            3: 'organizational',
+            4: 'organizational',
+            5: 'organizational',
+            6: 'organizational',
+            7: 'organizational',
+            8: 'organizational',
+            9: 'organizational',
+            10: 'social',
+            11: 'economic',
+            12: 'social',
+            13: 'social',
+            14: 'organizational',
+            15: 'economic'
+        };
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            if (pageId === 'results-page') updateResults();
+        }
+
+        function selectOption(option, score) {
+            const page = option.closest('.page');
+            const pageNum = parseInt(page.id.replace('question-', ''));
+            const category = questionToCategory[pageNum];
+
+            page.querySelectorAll('.option').forEach(el => el.classList.remove('selected'));
+            option.classList.add('selected');
+
+            userScore += score;
+            categoryScores[category] += score;
+
+            const nextBtn = page.querySelector('.btn-next');
+            nextBtn.disabled = false;
+        }
+
+        function updateResults() {
+            const riskPercentage = Math.min(100, Math.round((userScore / maxScore) * 100));
+            const riskEl = document.getElementById('risk-percentage');
+            const titleEl = document.getElementById('risk-title');
+            const recommendationsEl = document.getElementById('recommendations-list');
+
+            let riskClass = 'risk-low-percent';
+            let riskText = 'Низкий риск';
+            let recommendations = [];
+
+            if (riskPercentage >= 70) {
+                riskClass = 'risk-high-percent';
+                riskText = 'Высокий риск';
+                recommendations = [
+                    '⚠️ Немедленно проанализируйте договор и реальное поведение сторон',
+                    '⚠️ Проконсультируйтесь с юристом по трудовому праву',
+                    '⚠️ Уберите признаки трудовых отношений: контроль, график, инструменты, дисциплинарные меры',
+                    '✅ Зафиксируйте вашу самостоятельность в договоре'
+                ];
+            } else if (riskPercentage >= 30) {
+                riskClass = 'risk-medium-percent';
+                riskText = 'Средний риск';
+                recommendations = [
+                    '⚠️ Обратите внимание на признаки, набравшие баллы',
+                    '✅ Пересмотрите порядок контроля и отчётности',
+                    '✅ Уточните в договоре самостоятельность в выборе средств и методов',
+                    '✅ Зафиксируйте право работать с другими заказчиками'
+                ];
+            } else {
+                riskText = 'Низкий риск';
+                recommendations = [
+                    '✅ Ваши отношения с заказчиком — гражданско-правовые',
+                    '✅ Риск переквалификации минимален',
+                    '✅ Продолжайте документировать самостоятельность в работе',
+                    '✅ Сохраняйте возможность работать с другими заказчиками'
+                ];
+            }
+
+            riskEl.textContent = riskPercentage + '%';
+            riskEl.className = 'risk-percentage ' + riskClass;
+            titleEl.textContent = riskText;
+            document.getElementById('score-text').textContent = `Набрано баллов: ${userScore} из ${maxScore}`;
+            document.getElementById('org-score').textContent = Math.round(categoryScores.organizational);
+            document.getElementById('eco-score').textContent = Math.round(categoryScores.economic);
+            document.getElementById('soc-score').textContent = Math.round(categoryScores.social);
+
+            recommendationsEl.innerHTML = recommendations.map(r => `<div class="recommendation">${r}</div>`).join('');
+        }
+
+        function showResults() {
+            showPage('results-page');
+        }
+
+        function resetAndRestart() {
+            userScore = 0;
+            categoryScores = { organizational: 0, economic: 0, social: 0 };
+            document.querySelectorAll('.option').forEach(el => el.classList.remove('selected'));
+            document.querySelectorAll('.btn-next').forEach(btn => btn.disabled = true);
+            showPage('start-page');
+        }
+    </script>
+</body>
+</html>
